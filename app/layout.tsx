@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito, Fraunces } from "next/font/google";
 import "./globals.css";
 
@@ -16,6 +16,21 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Razlin",
   description: "A little home for us",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Razlin",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#a8493f",
 };
 
 export default function RootLayout({
