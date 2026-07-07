@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { deleteChore, logout } from "@/app/actions/chores";
-import {
-  type Chore,
-  choreOccursOn,
-  describeFrequency,
-  getCalendarDays,
-  toDateKey,
-} from "@/lib/calendar";
+import { type Chore, choreOccursOn, describeFrequency, getCalendarDays, toDateKey } from "@/lib/calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
-import { OccurrenceChip } from "@/components/occurrence-chip";
+import { CalendarView, type DayData } from "@/components/calendar-view";
 import { Button } from "@/components/ui/button";
-
-const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 type Occurrence = {
   chore_id: number;
@@ -41,24 +33,33 @@ export default async function ChoresPage() {
   `;
   const overrideMap = new Map(overrides.map((o) => [`${o.chore_id}:${o.date}`, o]));
 
-  const grid = days.map((day) => {
+  const dayData: DayData[] = days.map((day) => {
     const dateKey = toDateKey(day);
     const items = chores
       .filter((chore) => choreOccursOn(chore, day))
       .map((chore) => {
         const override = overrideMap.get(`${chore.id}:${dateKey}`);
         return {
-          chore,
+          choreId: chore.id,
           date: dateKey,
+          emoji: chore.emoji,
+          title: chore.title,
           assignee: override?.assignee ?? null,
           done: override?.done ?? false,
         };
       });
-    return { day, dateKey, items };
+    return {
+      dateKey,
+      dayNumber: day.getDate(),
+      monthLabel: day.getDate() === 1 ? day.toLocaleDateString(undefined, { month: "short" }) : null,
+      label: day.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }),
+      isToday: dateKey === todayKey,
+      items,
+    };
   });
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <div className="mx-auto max-w-lg space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-3xl italic text-primary">Our Chores</h1>
         <div className="flex items-center gap-2">
@@ -75,51 +76,7 @@ export default async function ChoresPage() {
 
       <AddChoreForm />
 
-      <div className="grid grid-cols-7 gap-2">
-        {WEEKDAY_LABELS.map((label) => (
-          <div
-            key={label}
-            className="text-center text-xs font-medium text-muted-foreground"
-          >
-            {label}
-          </div>
-        ))}
-        {grid.map(({ day, dateKey, items }) => {
-          const isToday = dateKey === todayKey;
-          const showMonth = day.getDate() === 1 || dateKey === grid[0].dateKey;
-          return (
-            <div
-              key={dateKey}
-              className={`flex min-h-[110px] flex-col gap-1 rounded-xl border p-1.5 ${
-                isToday ? "border-primary bg-accent/20" : "bg-card"
-              }`}
-            >
-              <div
-                className={`text-[11px] font-medium ${
-                  isToday ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                {showMonth
-                  ? day.toLocaleDateString(undefined, { month: "short", day: "numeric" })
-                  : day.getDate()}
-              </div>
-              <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
-                {items.map(({ chore, date, assignee, done }) => (
-                  <OccurrenceChip
-                    key={chore.id}
-                    choreId={chore.id}
-                    date={date}
-                    emoji={chore.emoji}
-                    title={chore.title}
-                    assignee={assignee}
-                    done={done}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <CalendarView days={dayData} todayKey={todayKey} />
 
       <div className="space-y-2">
         <h2 className="text-sm font-medium text-muted-foreground">Manage chores</h2>

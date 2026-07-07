@@ -30,8 +30,8 @@ export function OccurrenceChip({ choreId, date, emoji, title, assignee, done }: 
 
   return (
     <div
-      className={`flex items-center gap-1 rounded-lg border px-1.5 py-1 text-[11px] leading-tight ${
-        done ? "bg-secondary/50 text-muted-foreground" : "bg-card"
+      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm ${
+        done ? "bg-secondary/50 text-muted-foreground" : "bg-background"
       }`}
     >
       <button
@@ -48,7 +48,7 @@ export function OccurrenceChip({ choreId, date, emoji, title, assignee, done }: 
         disabled={isPending}
         onClick={cycleAssignee}
         title={assignee ?? "Unassigned"}
-        className="shrink-0 rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary"
+        className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-medium text-primary"
       >
         {assignee ? assignee[0] : "?"}
       </button>

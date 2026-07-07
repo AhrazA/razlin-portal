@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,28 +10,51 @@ export default function Home() {
         <Heart className="absolute -top-4 -left-4 size-8 rotate-[-15deg] fill-primary text-primary opacity-70" />
         <Heart className="absolute -bottom-4 -right-4 size-8 rotate-[15deg] fill-primary text-primary opacity-70" />
 
-        <Heart className="mx-auto mb-4 size-6 fill-primary text-primary" />
+        <div className="relative mx-auto mb-4 size-28">
+          <Image
+            src="/couple.jpg"
+            alt="Ahraz and Malin"
+            width={112}
+            height={112}
+            className="size-28 rounded-full border-4 border-background object-cover shadow-lg"
+          />
+          <Heart className="absolute -right-1 -bottom-1 size-6 fill-primary text-primary drop-shadow" />
+        </div>
 
         <h1 className="font-heading text-5xl italic text-primary">RAZLIN</h1>
-
-        <p className="mx-auto mt-4 max-w-xs text-sm text-muted-foreground">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-          mollit anim id est laborum. Curabitur pretium tincidunt lacus, nulla gravida orci a
-          odio.
+        <p className="mt-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          A home for the babeses
         </p>
 
-        <Button
-          render={<Link href="/chores" />}
-          nativeButton={false}
-          size="lg"
-          className="mt-6 rounded-full px-8"
-        >
-          Chores ♥
-        </Button>
+        <p className="mx-auto mt-4 max-w-xs text-sm text-muted-foreground">
+          Here sits the page for what is arguably the BEST couple that has set foot on this earth.
+        </p>
+        <p className="mx-auto mt-4 max-w-xs text-sm text-muted-foreground">
+          A true testament to the power of chance in our lives, we are lucky to have found each other.
+        </p>
+        <p className="mx-auto mt-4 max-w-xs text-sm text-muted-foreground">
+          We make each other strong and give each other love, how much better can it get?
+        </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            render={<Link href="/chores" />}
+            nativeButton={false}
+            size="lg"
+            className="rounded-full px-8"
+          >
+            Chores ♥
+          </Button>
+          <Button
+            render={<Link href="/love-bomb" />}
+            nativeButton={false}
+            variant="outline"
+            size="lg"
+            className="rounded-full px-8"
+          >
+            LOVE BOMB 💣
+          </Button>
+        </div>
       </div>
     </div>
   );
