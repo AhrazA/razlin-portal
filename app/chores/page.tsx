@@ -4,6 +4,7 @@ import { deleteChore, logout } from "@/app/actions/chores";
 import { type Chore, choreOccursOn, describeFrequency, getCalendarDays, toDateKey } from "@/lib/calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
 import { CalendarView, type DayData } from "@/components/calendar-view";
+import { LiveSync } from "@/components/live-sync";
 import { Button } from "@/components/ui/button";
 
 type Occurrence = {
@@ -60,6 +61,7 @@ export default async function ChoresPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
+      <LiveSync />
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-3xl italic text-primary">Our Chores</h1>
         <div className="flex items-center gap-2">
