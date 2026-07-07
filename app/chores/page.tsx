@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { sql } from "@/lib/db";
-import { deleteChore, logout } from "@/app/actions/chores";
-import { type Chore, choreOccursOn, describeFrequency, getCalendarDays, toDateKey } from "@/lib/calendar";
+import { logout } from "@/app/actions/chores";
+import { type Chore, choreOccursOn, getCalendarDays, toDateKey } from "@/lib/calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
-import { CalendarView, type DayData } from "@/components/calendar-view";
+import { ChoresBoard } from "@/components/chores-board";
+import { type DayData } from "@/components/calendar-view";
 import { LiveSync } from "@/components/live-sync";
 import { Button } from "@/components/ui/button";
 
@@ -78,31 +79,7 @@ export default async function ChoresPage() {
 
       <AddChoreForm />
 
-      <CalendarView days={dayData} todayKey={todayKey} />
-
-      <div className="space-y-2">
-        <h2 className="text-sm font-medium text-muted-foreground">Manage chores</h2>
-        {chores.length === 0 && (
-          <p className="text-sm text-muted-foreground">No chores yet — add one above.</p>
-        )}
-        {chores.map((chore) => (
-          <div
-            key={chore.id}
-            className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2"
-          >
-            <span className="flex-1 text-sm">
-              {chore.emoji ? `${chore.emoji} ` : ""}
-              {chore.title}
-            </span>
-            <span className="text-xs text-muted-foreground">{describeFrequency(chore)}</span>
-            <form action={deleteChore.bind(null, chore.id)}>
-              <Button variant="ghost" size="sm" type="submit">
-                Remove
-              </Button>
-            </form>
-          </div>
-        ))}
-      </div>
+      <ChoresBoard days={dayData} todayKey={todayKey} chores={chores} />
     </div>
   );
 }

@@ -24,7 +24,15 @@ export type DayData = {
   items: DayItem[];
 };
 
-export function CalendarView({ days, todayKey }: { days: DayData[]; todayKey: string }) {
+export function CalendarView({
+  days,
+  todayKey,
+  highlightedChoreId = null,
+}: {
+  days: DayData[];
+  todayKey: string;
+  highlightedChoreId?: number | null;
+}) {
   const [selected, setSelected] = useState(todayKey);
   const selectedDay = days.find((d) => d.dateKey === selected) ?? days[0];
 
@@ -59,15 +67,21 @@ export function CalendarView({ days, todayKey }: { days: DayData[]; todayKey: st
               >
                 {day.dayNumber}
               </span>
-              <span className="flex h-1.5 gap-0.5">
+              <span className="flex flex-wrap justify-center gap-0.5">
                 {day.items.slice(0, 4).map((item, i) => (
                   <span
                     key={i}
                     className={cn(
-                      "h-1.5 w-1.5 rounded-full",
-                      item.done ? "bg-muted-foreground/40" : "bg-primary"
+                      "flex h-3.5 w-3.5 items-center justify-center rounded-full text-[8px] font-semibold leading-none transition-transform",
+                      item.done
+                        ? "bg-muted-foreground/30 text-muted-foreground"
+                        : "bg-primary text-primary-foreground",
+                      item.choreId === highlightedChoreId &&
+                        "scale-125 ring-2 ring-accent-foreground ring-offset-1 ring-offset-background"
                     )}
-                  />
+                  >
+                    {item.assignee ? item.assignee[0] : "?"}
+                  </span>
                 ))}
               </span>
             </button>
