@@ -15,6 +15,12 @@ export type DayItem = {
   done: boolean;
 };
 
+export type GoogleEventItem = {
+  id: string;
+  title: string;
+  person: string;
+};
+
 export type DayData = {
   dateKey: string;
   dayNumber: number;
@@ -22,6 +28,7 @@ export type DayData = {
   label: string;
   isToday: boolean;
   items: DayItem[];
+  googleEvents: GoogleEventItem[];
 };
 
 export function CalendarView({
@@ -83,6 +90,14 @@ export function CalendarView({
                     {item.assignee ? item.assignee[0] : "?"}
                   </span>
                 ))}
+                {day.googleEvents.slice(0, 4).map((event) => (
+                  <span
+                    key={event.id}
+                    className="flex h-3.5 w-3.5 items-center justify-center rounded-[3px] bg-sky-500/80 text-[8px] font-semibold leading-none text-white"
+                  >
+                    {event.person[0]}
+                  </span>
+                ))}
               </span>
             </button>
           );
@@ -93,10 +108,21 @@ export function CalendarView({
         <h2 className="text-sm font-medium text-muted-foreground">
           {selectedDay.dateKey === todayKey ? "Today" : selectedDay.label}
         </h2>
-        {selectedDay.items.length === 0 && (
+        {selectedDay.items.length === 0 && selectedDay.googleEvents.length === 0 && (
           <p className="text-sm text-muted-foreground">Nothing scheduled 🎉</p>
         )}
         <div className="space-y-1.5">
+          {selectedDay.googleEvents.map((event) => (
+            <div
+              key={event.id}
+              className="flex items-center gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2.5 text-sm"
+            >
+              <span className="flex-1 truncate">📅 {event.title}</span>
+              <span className="shrink-0 rounded-full bg-sky-500/20 px-2.5 py-1 text-xs font-medium text-sky-700">
+                {event.person}
+              </span>
+            </div>
+          ))}
           {selectedDay.items.map((item) => (
             <OccurrenceChip
               key={item.choreId}
