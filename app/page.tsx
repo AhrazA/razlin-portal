@@ -61,6 +61,15 @@ export default async function Home() {
           >
             LOVE BOMB 💣
           </Button>
+          <Button
+            render={<Link href="/newsletters" />}
+            nativeButton={false}
+            variant="outline"
+            size="lg"
+            className="rounded-full px-8"
+          >
+            Newsletters 📰
+          </Button>
         </div>
       </div>
 

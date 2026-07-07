@@ -8,7 +8,7 @@ import {
   toDateKey,
 } from "@/lib/calendar";
 import { DIFFICULTY_POINTS } from "@/lib/constants";
-import { fetchGoogleEventsForRange, type GoogleEvent } from "@/lib/google-calendar";
+import { getStoredEventsForRange, type GoogleEvent } from "@/lib/google-calendar";
 
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash";
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
@@ -162,28 +162,48 @@ async function callDeepSeek(prompt: string): Promise<string> {
 }
 
 export type StoredNewsletter = {
+  id: number;
   content: string;
   weekStart: string;
   weekEnd: string;
   createdAt: string;
 };
 
-export async function getLatestNewsletter(): Promise<StoredNewsletter | null> {
-  const [row] = await sql<
-    { content: string; week_start: string; week_end: string; created_at: string }[]
-  >`
-    select content, week_start::text as week_start, week_end::text as week_end, created_at
-    from newsletters
-    order by created_at desc
-    limit 1
-  `;
-  if (!row) return null;
+type NewsletterRow = {
+  id: number;
+  content: string;
+  week_start: string;
+  week_end: string;
+  created_at: string;
+};
+
+function toStoredNewsletter(row: NewsletterRow): StoredNewsletter {
   return {
+    id: row.id,
     content: row.content,
     weekStart: row.week_start,
     weekEnd: row.week_end,
     createdAt: row.created_at,
   };
+}
+
+export async function getLatestNewsletter(): Promise<StoredNewsletter | null> {
+  const [row] = await sql<NewsletterRow[]>`
+    select id, content, week_start::text as week_start, week_end::text as week_end, created_at
+    from newsletters
+    order by created_at desc
+    limit 1
+  `;
+  return row ? toStoredNewsletter(row) : null;
+}
+
+export async function getNewsletterHistory(): Promise<StoredNewsletter[]> {
+  const rows = await sql<NewsletterRow[]>`
+    select id, content, week_start::text as week_start, week_end::text as week_end, created_at
+    from newsletters
+    order by created_at desc
+  `;
+  return rows.map(toStoredNewsletter);
 }
 
 export async function generateWeeklyNewsletter(): Promise<string> {
@@ -192,7 +212,7 @@ export async function generateWeeklyNewsletter(): Promise<string> {
   const previousWeek = getPreviousWeekRange(today);
 
   const [events, upcomingChores, previousChores, scores] = await Promise.all([
-    fetchGoogleEventsForRange(startKey, endKey),
+    getStoredEventsForRange(startKey, endKey),
     getChoreOccurrences(startKey, endKey),
     getChoreOccurrences(previousWeek.startKey, previousWeek.endKey),
     getChoreScores(),

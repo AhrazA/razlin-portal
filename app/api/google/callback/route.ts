@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
-import { exchangeCodeForTokens } from "@/lib/google-calendar";
+import { exchangeCodeForTokens, syncCalendarEvents } from "@/lib/google-calendar";
 import { ASSIGNEES } from "@/lib/constants";
 
 export async function GET(request: NextRequest) {
@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
     choresUrl.searchParams.set("google_error", "1");
     return NextResponse.redirect(choresUrl);
   }
+
+  await syncCalendarEvents([person]);
 
   revalidatePath("/chores");
   revalidatePath("/");

@@ -9,7 +9,7 @@ import {
   toDateKey,
 } from "@/lib/calendar";
 import { DIFFICULTY_POINTS } from "@/lib/constants";
-import { fetchGoogleEventsForRange } from "@/lib/google-calendar";
+import { getStoredEventsForRange } from "@/lib/google-calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
 import { ChoresBoard } from "@/components/chores-board";
 import { type DayData } from "@/components/calendar-view";
@@ -58,7 +58,7 @@ export default async function ChoresPage() {
       (scores[occurrence.assignee] ?? 0) + DIFFICULTY_POINTS[occurrence.difficulty];
   }
 
-  const googleEvents = await fetchGoogleEventsForRange(startKey, endKey);
+  const googleEvents = await getStoredEventsForRange(startKey, endKey);
   const googleEventsByDate = new Map<string, typeof googleEvents>();
   for (const event of googleEvents) {
     const list = googleEventsByDate.get(event.date) ?? [];

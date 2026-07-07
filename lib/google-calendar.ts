@@ -1,8 +1,11 @@
 import { sql } from "@/lib/db";
 import { ASSIGNEES } from "@/lib/constants";
+import { toDateKey } from "@/lib/calendar";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+const SYNC_PAST_DAYS = 7;
+const SYNC_FUTURE_DAYS = 28;
 
 export function googleAuthUrl(person: string, redirectUri: string) {
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -72,41 +75,80 @@ export type GoogleEvent = {
   person: string;
 };
 
-export async function fetchGoogleEventsForRange(
+async function fetchPersonEventsFromApi(
+  person: string,
   startKey: string,
   endKey: string
 ): Promise<GoogleEvent[]> {
-  const results = await Promise.all(
-    ASSIGNEES.map(async (person) => {
-      const token = await getValidAccessToken(person);
-      if (!token) return [];
+  const token = await getValidAccessToken(person);
+  if (!token) return [];
 
-      const url = new URL(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(token.calendarId)}/events`
-      );
-      url.searchParams.set("timeMin", `${startKey}T00:00:00Z`);
-      url.searchParams.set("timeMax", `${endKey}T23:59:59Z`);
-      url.searchParams.set("singleEvents", "true");
-      url.searchParams.set("orderBy", "startTime");
+  const url = new URL(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(token.calendarId)}/events`
+  );
+  url.searchParams.set("timeMin", `${startKey}T00:00:00Z`);
+  url.searchParams.set("timeMax", `${endKey}T23:59:59Z`);
+  url.searchParams.set("singleEvents", "true");
+  url.searchParams.set("orderBy", "startTime");
 
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token.accessToken}` },
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token.accessToken}` },
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
 
-      return (data.items ?? []).map(
-        (event: { id: string; summary?: string; start?: { date?: string; dateTime?: string } }) => ({
-          id: event.id,
-          title: event.summary ?? "(untitled)",
-          date: (event.start?.date ?? event.start?.dateTime ?? "").slice(0, 10),
-          person,
-        })
-      );
+  return (data.items ?? []).map(
+    (event: { id: string; summary?: string; start?: { date?: string; dateTime?: string } }) => ({
+      id: event.id,
+      title: event.summary ?? "(untitled)",
+      date: (event.start?.date ?? event.start?.dateTime ?? "").slice(0, 10),
+      person,
     })
   );
+}
 
-  return results.flat();
+export async function syncCalendarEvents(
+  people: readonly string[] = ASSIGNEES
+): Promise<{ person: string; count: number }[]> {
+  const today = new Date();
+  const startKey = toDateKey(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() - SYNC_PAST_DAYS)
+  );
+  const endKey = toDateKey(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() + SYNC_FUTURE_DAYS)
+  );
+
+  const results = [];
+  for (const person of people) {
+    const events = await fetchPersonEventsFromApi(person, startKey, endKey);
+
+    await sql`
+      delete from calendar_events
+      where person = ${person} and date >= ${startKey} and date <= ${endKey}
+    `;
+    for (const event of events) {
+      await sql`
+        insert into calendar_events (google_event_id, person, title, date)
+        values (${event.id}, ${person}, ${event.title}, ${event.date})
+        on conflict (person, google_event_id) do update set
+          title = excluded.title,
+          date = excluded.date,
+          synced_at = now()
+      `;
+    }
+    results.push({ person, count: events.length });
+  }
+  return results;
+}
+
+export async function getStoredEventsForRange(startKey: string, endKey: string): Promise<GoogleEvent[]> {
+  const rows = await sql<{ google_event_id: string; title: string; date: string; person: string }[]>`
+    select google_event_id, title, date::text as date, person
+    from calendar_events
+    where date >= ${startKey} and date <= ${endKey}
+    order by date asc
+  `;
+  return rows.map((row) => ({ id: row.google_event_id, title: row.title, date: row.date, person: row.person }));
 }
 
 export async function connectedPeople(): Promise<string[]> {
