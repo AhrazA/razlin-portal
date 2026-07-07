@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { syncNextWeekEvents } from "@/lib/google-calendar";
+import { revalidatePath } from "next/cache";
+import { generateWeeklyNewsletter } from "@/lib/newsletter";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -7,6 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const events = await syncNextWeekEvents();
-  return NextResponse.json({ count: events.length });
+  const newsletter = await generateWeeklyNewsletter();
+  revalidatePath("/");
+  return NextResponse.json({ newsletter });
 }

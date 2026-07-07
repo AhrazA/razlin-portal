@@ -29,6 +29,12 @@ export function getNextWeekRange(today: Date): { startKey: string; endKey: strin
   return { startKey: toDateKey(today), endKey: toDateKey(end) };
 }
 
+export function getPreviousWeekRange(today: Date): { startKey: string; endKey: string } {
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+  return { startKey: toDateKey(start), endKey: toDateKey(end) };
+}
+
 export function getCalendarDays(today: Date, weeks = 4): Date[] {
   const mondayOffset = (today.getDay() + 6) % 7;
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - mondayOffset);

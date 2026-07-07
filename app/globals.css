@@ -127,3 +127,87 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .newspaper {
+    font-family: var(--font-fraunces);
+  }
+
+  .newspaper :where(h1, h2, h3) {
+    font-family: var(--font-fraunces);
+    font-style: italic;
+    color: var(--primary);
+  }
+
+  .newspaper h1 {
+    font-size: 1.875rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.1rem;
+    border-bottom: 3px double var(--foreground);
+  }
+
+  .newspaper h2 {
+    font-size: 1.15rem;
+    margin-top: 1.35rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .newspaper h3 {
+    font-size: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .newspaper p {
+    margin-bottom: 0.85rem;
+    line-height: 1.65;
+  }
+
+  .newspaper > p:first-of-type::first-letter {
+    font-family: var(--font-fraunces);
+    font-weight: 600;
+    font-size: 3.2em;
+    line-height: 0.78;
+    float: left;
+    padding-right: 0.1em;
+    padding-top: 0.05em;
+    color: var(--primary);
+  }
+
+  .newspaper hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.25rem 0;
+  }
+
+  .newspaper blockquote {
+    font-family: var(--font-fraunces);
+    font-style: italic;
+    border-left: 3px solid var(--primary);
+    padding-left: 1rem;
+    margin: 1rem 0;
+  }
+
+  .newspaper strong {
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .newspaper ul,
+  .newspaper ol {
+    margin: 0.5rem 0 0.85rem 1.25rem;
+  }
+
+  .newspaper li {
+    margin-bottom: 0.25rem;
+  }
+
+  .newspaper li::marker {
+    color: var(--primary);
+  }
+}

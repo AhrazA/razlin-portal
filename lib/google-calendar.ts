@@ -1,6 +1,5 @@
 import { sql } from "@/lib/db";
 import { ASSIGNEES } from "@/lib/constants";
-import { getNextWeekRange } from "@/lib/calendar";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
@@ -108,18 +107,6 @@ export async function fetchGoogleEventsForRange(
   );
 
   return results.flat();
-}
-
-export async function syncNextWeekEvents(): Promise<GoogleEvent[]> {
-  const { startKey, endKey } = getNextWeekRange(new Date());
-  const events = await fetchGoogleEventsForRange(startKey, endKey);
-
-  console.log(`[google-calendar] next week (${startKey} to ${endKey}): ${events.length} event(s)`);
-  for (const event of events) {
-    console.log(`[google-calendar]  - ${event.date} ${event.person}: ${event.title}`);
-  }
-
-  return events;
 }
 
 export async function connectedPeople(): Promise<string[]> {

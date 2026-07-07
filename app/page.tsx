@@ -3,11 +3,13 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleCalendarConnect } from "@/components/google-calendar-connect";
+import { NewsletterCard } from "@/components/newsletter-card";
 import { ASSIGNEES } from "@/lib/constants";
 import { connectedPeople } from "@/lib/google-calendar";
+import { getLatestNewsletter } from "@/lib/newsletter";
 
 export default async function Home() {
-  const connected = await connectedPeople();
+  const [connected, newsletter] = await Promise.all([connectedPeople(), getLatestNewsletter()]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-br from-background via-secondary/40 to-accent/30 p-6">
@@ -60,6 +62,10 @@ export default async function Home() {
             LOVE BOMB 💣
           </Button>
         </div>
+      </div>
+
+      <div className="w-full max-w-md">
+        <NewsletterCard newsletter={newsletter} />
       </div>
 
       <div className="w-full max-w-md">
