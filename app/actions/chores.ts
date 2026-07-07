@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
+import { toDateKey } from "@/lib/calendar";
 
 export async function createChore(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
@@ -14,9 +15,10 @@ export async function createChore(formData: FormData) {
 
   if (frequencyType === "interval") {
     const intervalDays = Math.max(1, Number(formData.get("intervalDays") ?? 1));
+    const anchorDate = String(formData.get("anchorDate") ?? "").trim() || toDateKey(new Date());
     await sql`
       insert into chores (title, emoji, frequency_type, interval_days, anchor_date)
-      values (${title}, ${emoji}, 'interval', ${intervalDays}, current_date)
+      values (${title}, ${emoji}, 'interval', ${intervalDays}, ${anchorDate})
     `;
   } else {
     const days = formData.getAll("days").map(Number);

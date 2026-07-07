@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createChore } from "@/app/actions/chores";
+import { toDateKey } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 
 const DAYS = [
@@ -16,15 +17,11 @@ const DAYS = [
   { value: 0, label: "Sun" },
 ];
 
-const EMOJI_OPTIONS = [
-  "🧹", "🧺", "🍽️", "🗑️", "🧽", "🛁", "🧻", "🪣", "🚿", "🐶", "🌱", "🛒",
-];
-
 export function AddChoreForm() {
   const [frequencyType, setFrequencyType] = useState<"weekly" | "interval">("weekly");
   const [days, setDays] = useState<number[]>([]);
-  const [emoji, setEmoji] = useState(EMOJI_OPTIONS[0]);
   const [intervalDays, setIntervalDays] = useState(2);
+  const [anchorDate, setAnchorDate] = useState(() => toDateKey(new Date()));
 
   function toggleDay(value: number) {
     setDays((prev) => (prev.includes(value) ? prev.filter((d) => d !== value) : [...prev, value]));
@@ -36,6 +33,17 @@ export function AddChoreForm() {
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Chore</label>
           <Input name="title" placeholder="Do the dishes" required className="h-11 w-48" />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-muted-foreground">Icon</label>
+          <Input
+            name="emoji"
+            inputMode="text"
+            maxLength={4}
+            placeholder="🧹"
+            className="h-11 w-16 text-center text-xl"
+          />
         </div>
 
         <div className="flex flex-col gap-1">
@@ -63,7 +71,6 @@ export function AddChoreForm() {
         </div>
 
         <input type="hidden" name="frequencyType" value={frequencyType} />
-        <input type="hidden" name="emoji" value={emoji} />
 
         {frequencyType === "interval" && (
           <div className="flex flex-col gap-1">
@@ -99,6 +106,19 @@ export function AddChoreForm() {
             </div>
           </div>
         )}
+
+        {frequencyType === "interval" && (
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Starting</label>
+            <Input
+              name="anchorDate"
+              type="date"
+              value={anchorDate}
+              onChange={(e) => setAnchorDate(e.target.value)}
+              className="h-11"
+            />
+          </div>
+        )}
       </div>
 
       {frequencyType === "weekly" && (
@@ -126,25 +146,6 @@ export function AddChoreForm() {
           ))}
         </div>
       )}
-
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-muted-foreground">Icon</label>
-        <div className="flex flex-wrap gap-2">
-          {EMOJI_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setEmoji(option)}
-              className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-full border text-xl transition-colors",
-                emoji === option ? "border-primary bg-accent/40" : "bg-background"
-              )}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <Button type="submit" size="lg" className="self-start rounded-full">
         Add chore
