@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleCalendarConnect } from "@/components/google-calendar-connect";
+import { InstallPrompt } from "@/components/install-prompt";
 import { NewsletterCard } from "@/components/newsletter-card";
+import { PushNotifications } from "@/components/push-notifications";
 import { ASSIGNEES } from "@/lib/constants";
 import { connectedPeople } from "@/lib/google-calendar";
 import { getLatestNewsletter } from "@/lib/newsletter";
@@ -79,6 +81,11 @@ export default async function Home() {
 
       <div className="w-full max-w-md">
         <GoogleCalendarConnect connected={connected} people={ASSIGNEES} />
+      </div>
+
+      <div className="flex flex-col items-center gap-2">
+        <PushNotifications />
+        <InstallPrompt />
       </div>
     </div>
   );
