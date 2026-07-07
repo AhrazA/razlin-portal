@@ -8,7 +8,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ from?: string; error?: string }>;
 }) {
-  const { from = "/chores", error } = await searchParams;
+  const { from = "/", error } = await searchParams;
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">

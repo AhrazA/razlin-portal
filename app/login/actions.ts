@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 export async function login(formData: FormData) {
   const passcode = String(formData.get("passcode") ?? "");
-  const from = String(formData.get("from") ?? "/chores");
+  const from = String(formData.get("from") ?? "/");
 
   if (passcode !== process.env.APP_PASSCODE) {
     redirect(`/login?error=1&from=${encodeURIComponent(from)}`);
