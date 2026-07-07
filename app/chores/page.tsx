@@ -8,12 +8,11 @@ import {
   getCalendarDays,
   toDateKey,
 } from "@/lib/calendar";
-import { ASSIGNEES, DIFFICULTY_POINTS } from "@/lib/constants";
-import { connectedPeople, fetchGoogleEventsForRange } from "@/lib/google-calendar";
+import { DIFFICULTY_POINTS } from "@/lib/constants";
+import { fetchGoogleEventsForRange } from "@/lib/google-calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
 import { ChoresBoard } from "@/components/chores-board";
 import { type DayData } from "@/components/calendar-view";
-import { GoogleCalendarConnect } from "@/components/google-calendar-connect";
 import { LiveSync } from "@/components/live-sync";
 import { Scoreboard } from "@/components/scoreboard";
 import { UpNextItem } from "@/components/up-next-item";
@@ -59,10 +58,7 @@ export default async function ChoresPage() {
       (scores[occurrence.assignee] ?? 0) + DIFFICULTY_POINTS[occurrence.difficulty];
   }
 
-  const [connected, googleEvents] = await Promise.all([
-    connectedPeople(),
-    fetchGoogleEventsForRange(startKey, endKey),
-  ]);
+  const googleEvents = await fetchGoogleEventsForRange(startKey, endKey);
   const googleEventsByDate = new Map<string, typeof googleEvents>();
   for (const event of googleEvents) {
     const list = googleEventsByDate.get(event.date) ?? [];
@@ -185,8 +181,6 @@ export default async function ChoresPage() {
           </>
         )}
       </div>
-
-      <GoogleCalendarConnect connected={connected} people={ASSIGNEES} />
 
       <AddChoreForm />
 

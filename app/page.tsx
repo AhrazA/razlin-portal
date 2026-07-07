@@ -2,10 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GoogleCalendarConnect } from "@/components/google-calendar-connect";
+import { ASSIGNEES } from "@/lib/constants";
+import { connectedPeople } from "@/lib/google-calendar";
 
-export default function Home() {
+export default async function Home() {
+  const connected = await connectedPeople();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-secondary/40 to-accent/30 p-6">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-br from-background via-secondary/40 to-accent/30 p-6">
       <div className="relative w-full max-w-md -rotate-1 rounded-[2rem] border bg-card p-10 text-center shadow-2xl">
         <Heart className="absolute -top-4 -left-4 size-8 rotate-[-15deg] fill-primary text-primary opacity-70" />
         <Heart className="absolute -bottom-4 -right-4 size-8 rotate-[15deg] fill-primary text-primary opacity-70" />
@@ -55,6 +60,10 @@ export default function Home() {
             LOVE BOMB 💣
           </Button>
         </div>
+      </div>
+
+      <div className="w-full max-w-md">
+        <GoogleCalendarConnect connected={connected} people={ASSIGNEES} />
       </div>
     </div>
   );
