@@ -8,13 +8,14 @@ import {
   getCalendarDays,
   toDateKey,
 } from "@/lib/calendar";
-import { ASSIGNEES } from "@/lib/constants";
+import { ASSIGNEES, DIFFICULTY_POINTS } from "@/lib/constants";
 import { connectedPeople, fetchGoogleEventsForRange } from "@/lib/google-calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
 import { ChoresBoard } from "@/components/chores-board";
 import { type DayData } from "@/components/calendar-view";
 import { GoogleCalendarConnect } from "@/components/google-calendar-connect";
 import { LiveSync } from "@/components/live-sync";
+import { Scoreboard } from "@/components/scoreboard";
 import { UpNextItem } from "@/components/up-next-item";
 import { Button } from "@/components/ui/button";
 
@@ -33,7 +34,7 @@ export default async function ChoresPage() {
 
   const chores = await sql<Chore[]>`
     select id, title, emoji, frequency_type, interval_days, days_of_week,
-      anchor_date::text as anchor_date
+      anchor_date::text as anchor_date, difficulty
     from chores
     order by created_at asc
   `;
@@ -44,6 +45,19 @@ export default async function ChoresPage() {
     where date >= ${startKey} and date <= ${endKey}
   `;
   const overrideMap = new Map(overrides.map((o) => [`${o.chore_id}:${o.date}`, o]));
+
+  const doneOccurrences = await sql<{ assignee: string | null; difficulty: Chore["difficulty"] }[]>`
+    select co.assignee, c.difficulty
+    from chore_occurrences co
+    join chores c on c.id = co.chore_id
+    where co.status = 'DONE'
+  `;
+  const scores: Record<string, number> = {};
+  for (const occurrence of doneOccurrences) {
+    if (!occurrence.assignee) continue;
+    scores[occurrence.assignee] =
+      (scores[occurrence.assignee] ?? 0) + DIFFICULTY_POINTS[occurrence.difficulty];
+  }
 
   const [connected, googleEvents] = await Promise.all([
     connectedPeople(),
@@ -118,6 +132,8 @@ export default async function ChoresPage() {
           </form>
         </div>
       </div>
+
+      <Scoreboard scores={scores} />
 
       <div className="space-y-2 rounded-2xl border bg-card p-4">
         <h2 className="text-sm font-medium text-muted-foreground">What&apos;s next</h2>

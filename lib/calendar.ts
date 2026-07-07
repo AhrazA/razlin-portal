@@ -6,6 +6,7 @@ export type Chore = {
   interval_days: number | null;
   days_of_week: number[] | null;
   anchor_date: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
 };
 
 export type ChoreOccurrenceStatus = "PENDING" | "DONE" | "CANCELLED";

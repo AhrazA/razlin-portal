@@ -60,7 +60,7 @@ export function UpNextItem({
         title={assignee ?? "Unassigned"}
         className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-medium text-primary"
       >
-        {assignee ? assignee[0] : "?"}
+        {assignee ? assignee[0] : "❤️"}
       </button>
       {showActions && (
         <>

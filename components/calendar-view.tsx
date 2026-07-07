@@ -88,7 +88,7 @@ export function CalendarView({
                         "scale-125 ring-2 ring-accent-foreground ring-offset-1 ring-offset-background"
                     )}
                   >
-                    {item.assignee ? item.assignee[0] : "?"}
+                    {item.assignee ? item.assignee[0] : "❤️"}
                   </span>
                 ))}
                 {day.googleEvents.slice(0, 4).map((event) => (

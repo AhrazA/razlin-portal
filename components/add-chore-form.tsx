@@ -18,12 +18,19 @@ const DAYS = [
   { value: 0, label: "Sun" },
 ];
 
+const DIFFICULTY_OPTIONS = [
+  { value: "EASY", label: "Easy" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HARD", label: "Hard" },
+] as const;
+
 export function AddChoreForm() {
   const [frequencyType, setFrequencyType] = useState<"weekly" | "interval">("weekly");
   const [days, setDays] = useState<number[]>([]);
   const [emoji, setEmoji] = useState("");
   const [intervalDays, setIntervalDays] = useState(2);
   const [anchorDate, setAnchorDate] = useState(() => toDateKey(new Date()));
+  const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("EASY");
 
   function toggleDay(value: number) {
     setDays((prev) => (prev.includes(value) ? prev.filter((d) => d !== value) : [...prev, value]));
@@ -41,6 +48,25 @@ export function AddChoreForm() {
           <label className="text-xs text-muted-foreground">Icon</label>
           <EmojiPickerButton value={emoji} onChange={setEmoji} />
           <input type="hidden" name="emoji" value={emoji} />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-muted-foreground">Difficulty</label>
+          <div className="flex gap-1">
+            {DIFFICULTY_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={difficulty === option.value ? "default" : "outline"}
+                onClick={() => setDifficulty(option.value)}
+                className="h-11 rounded-full px-4"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <input type="hidden" name="difficulty" value={difficulty} />
         </div>
 
         <div className="flex flex-col gap-1">
