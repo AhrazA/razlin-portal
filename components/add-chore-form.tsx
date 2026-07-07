@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { EmojiPickerButton } from "@/components/emoji-picker-button";
 import { createChore } from "@/app/actions/chores";
 import { toDateKey } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ const DAYS = [
 export function AddChoreForm() {
   const [frequencyType, setFrequencyType] = useState<"weekly" | "interval">("weekly");
   const [days, setDays] = useState<number[]>([]);
+  const [emoji, setEmoji] = useState("");
   const [intervalDays, setIntervalDays] = useState(2);
   const [anchorDate, setAnchorDate] = useState(() => toDateKey(new Date()));
 
@@ -37,13 +39,8 @@ export function AddChoreForm() {
 
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Icon</label>
-          <Input
-            name="emoji"
-            inputMode="text"
-            maxLength={4}
-            placeholder="🧹"
-            className="h-11 w-16 text-center text-xl"
-          />
+          <EmojiPickerButton value={emoji} onChange={setEmoji} />
+          <input type="hidden" name="emoji" value={emoji} />
         </div>
 
         <div className="flex flex-col gap-1">
