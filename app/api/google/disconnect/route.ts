@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
   if (ASSIGNEES.includes(person as (typeof ASSIGNEES)[number])) {
     await sql`delete from google_accounts where person = ${person}`;
     revalidatePath("/chores");
+    revalidatePath("/");
   }
   return NextResponse.redirect(new URL("/chores", request.nextUrl.origin));
 }

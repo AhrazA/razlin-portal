@@ -24,6 +24,11 @@ function parseDateKey(dateKey: string): Date {
   return new Date(`${dateKey}T00:00:00`);
 }
 
+export function getNextWeekRange(today: Date): { startKey: string; endKey: string } {
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 6);
+  return { startKey: toDateKey(today), endKey: toDateKey(end) };
+}
+
 export function getCalendarDays(today: Date, weeks = 4): Date[] {
   const mondayOffset = (today.getDay() + 6) % 7;
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - mondayOffset);
