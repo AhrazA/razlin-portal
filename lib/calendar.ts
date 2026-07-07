@@ -8,6 +8,8 @@ export type Chore = {
   anchor_date: string;
 };
 
+export type ChoreOccurrenceStatus = "PENDING" | "DONE" | "CANCELLED";
+
 const MS_PER_DAY = 86_400_000;
 
 export function toDateKey(date: Date): string {

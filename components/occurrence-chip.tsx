@@ -1,7 +1,8 @@
 "use client";
 
 import { useTransition } from "react";
-import { setOccurrenceAssignee, setOccurrenceDone } from "@/app/actions/chores";
+import { setOccurrenceAssignee, setOccurrenceStatus } from "@/app/actions/chores";
+import { type ChoreOccurrenceStatus } from "@/lib/calendar";
 import { ASSIGNEES } from "@/lib/constants";
 
 type Props = {
@@ -10,13 +11,14 @@ type Props = {
   emoji: string | null;
   title: string;
   assignee: string | null;
-  done: boolean;
+  status: ChoreOccurrenceStatus;
 };
 
 const ASSIGNEE_CYCLE: (string | null)[] = [null, ...ASSIGNEES];
 
-export function OccurrenceChip({ choreId, date, emoji, title, assignee, done }: Props) {
+export function OccurrenceChip({ choreId, date, emoji, title, assignee, status }: Props) {
   const [isPending, startTransition] = useTransition();
+  const done = status !== "PENDING";
 
   function cycleAssignee() {
     const next =
@@ -25,7 +27,7 @@ export function OccurrenceChip({ choreId, date, emoji, title, assignee, done }: 
   }
 
   function toggleDone() {
-    startTransition(() => setOccurrenceDone(choreId, date, !done));
+    startTransition(() => setOccurrenceStatus(choreId, date, done ? "PENDING" : "DONE"));
   }
 
   return (

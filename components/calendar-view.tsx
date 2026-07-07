@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { OccurrenceChip } from "@/components/occurrence-chip";
+import { type ChoreOccurrenceStatus } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 
 const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -12,7 +13,7 @@ export type DayItem = {
   emoji: string | null;
   title: string;
   assignee: string | null;
-  done: boolean;
+  status: ChoreOccurrenceStatus;
 };
 
 export type GoogleEventItem = {
@@ -80,7 +81,7 @@ export function CalendarView({
                     key={i}
                     className={cn(
                       "flex h-3.5 w-3.5 items-center justify-center rounded-full text-[8px] font-semibold leading-none transition-transform",
-                      item.done
+                      item.status !== "PENDING"
                         ? "bg-muted-foreground/30 text-muted-foreground"
                         : "bg-primary text-primary-foreground",
                       item.choreId === highlightedChoreId &&
@@ -131,7 +132,7 @@ export function CalendarView({
               emoji={item.emoji}
               title={item.title}
               assignee={item.assignee}
-              done={item.done}
+              status={item.status}
             />
           ))}
         </div>

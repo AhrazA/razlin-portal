@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
-import { toDateKey } from "@/lib/calendar";
+import { toDateKey, type ChoreOccurrenceStatus } from "@/lib/calendar";
 
 export async function createChore(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
@@ -50,11 +50,15 @@ export async function setOccurrenceAssignee(
   revalidatePath("/chores");
 }
 
-export async function setOccurrenceDone(choreId: number, date: string, done: boolean) {
+export async function setOccurrenceStatus(
+  choreId: number,
+  date: string,
+  status: ChoreOccurrenceStatus
+) {
   await sql`
-    insert into chore_occurrences (chore_id, date, done)
-    values (${choreId}, ${date}, ${done})
-    on conflict (chore_id, date) do update set done = excluded.done
+    insert into chore_occurrences (chore_id, date, status)
+    values (${choreId}, ${date}, ${status})
+    on conflict (chore_id, date) do update set status = excluded.status
   `;
   revalidatePath("/chores");
 }

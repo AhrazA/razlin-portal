@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { logout } from "@/app/actions/chores";
-import { type Chore, choreOccursOn, getCalendarDays, toDateKey } from "@/lib/calendar";
+import {
+  type Chore,
+  type ChoreOccurrenceStatus,
+  choreOccursOn,
+  getCalendarDays,
+  toDateKey,
+} from "@/lib/calendar";
 import { ASSIGNEES } from "@/lib/constants";
 import { connectedPeople, fetchGoogleEventsForRange } from "@/lib/google-calendar";
 import { AddChoreForm } from "@/components/add-chore-form";
@@ -9,13 +15,14 @@ import { ChoresBoard } from "@/components/chores-board";
 import { type DayData } from "@/components/calendar-view";
 import { GoogleCalendarConnect } from "@/components/google-calendar-connect";
 import { LiveSync } from "@/components/live-sync";
+import { UpNextItem } from "@/components/up-next-item";
 import { Button } from "@/components/ui/button";
 
 type Occurrence = {
   chore_id: number;
   date: string;
   assignee: string | null;
-  done: boolean;
+  status: ChoreOccurrenceStatus;
 };
 
 export default async function ChoresPage() {
@@ -32,7 +39,7 @@ export default async function ChoresPage() {
   `;
 
   const overrides = await sql<Occurrence[]>`
-    select chore_id, date::text as date, assignee, done
+    select chore_id, date::text as date, assignee, status
     from chore_occurrences
     where date >= ${startKey} and date <= ${endKey}
   `;
@@ -61,7 +68,7 @@ export default async function ChoresPage() {
           emoji: chore.emoji,
           title: chore.title,
           assignee: override?.assignee ?? null,
-          done: override?.done ?? false,
+          status: override?.status ?? "PENDING",
         };
       });
     return {
@@ -75,15 +82,23 @@ export default async function ChoresPage() {
     };
   });
 
-  const upNext = dayData
-    .filter((day) => day.dateKey >= todayKey)
+  const dayLabelFor = (day: DayData) =>
+    day.isToday ? "Today" : day.label.split(",")[0].slice(0, 3);
+
+  const due = dayData
+    .filter((day) => day.dateKey <= todayKey)
     .flatMap((day) =>
       day.items
-        .filter((item) => !item.done)
-        .map((item) => ({
-          ...item,
-          dayLabel: day.isToday ? "Today" : day.label.split(",")[0].slice(0, 3),
-        }))
+        .filter((item) => item.status === "PENDING")
+        .map((item) => ({ ...item, dayLabel: dayLabelFor(day) }))
+    );
+
+  const upNext = dayData
+    .filter((day) => day.dateKey > todayKey)
+    .flatMap((day) =>
+      day.items
+        .filter((item) => item.status === "PENDING")
+        .map((item) => ({ ...item, dayLabel: dayLabelFor(day) }))
     )
     .slice(0, 3);
 
@@ -106,26 +121,52 @@ export default async function ChoresPage() {
 
       <div className="space-y-2 rounded-2xl border bg-card p-4">
         <h2 className="text-sm font-medium text-muted-foreground">What&apos;s next</h2>
-        {upNext.length === 0 ? (
+        {due.length === 0 && upNext.length === 0 ? (
           <p className="text-sm text-muted-foreground">All caught up 🎉</p>
         ) : (
-          <div className="space-y-1.5">
-            {upNext.map((item) => (
-              <div
-                key={`${item.choreId}:${item.date}`}
-                className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2.5 text-sm"
-              >
-                <span className="flex-1 truncate">
-                  {item.emoji ? `${item.emoji} ` : ""}
-                  {item.title}
-                  <span className="ml-1.5 text-xs text-muted-foreground">{item.dayLabel}</span>
-                </span>
-                <span className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-medium text-primary">
-                  {item.assignee ? item.assignee[0] : "?"}
-                </span>
+          <>
+            {due.length > 0 && (
+              <div className="space-y-1.5">
+                {due.map((item) => (
+                  <UpNextItem
+                    key={`${item.choreId}:${item.date}`}
+                    choreId={item.choreId}
+                    date={item.date}
+                    emoji={item.emoji}
+                    title={item.title}
+                    assignee={item.assignee}
+                    dayLabel={item.dayLabel}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+
+            {upNext.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 pt-1">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                    Coming up
+                  </span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <div className="space-y-1.5">
+                  {upNext.map((item) => (
+                    <UpNextItem
+                      key={`${item.choreId}:${item.date}`}
+                      choreId={item.choreId}
+                      date={item.date}
+                      emoji={item.emoji}
+                      title={item.title}
+                      assignee={item.assignee}
+                      dayLabel={item.dayLabel}
+                      showActions={false}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
 
