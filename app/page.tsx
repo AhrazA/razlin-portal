@@ -72,6 +72,15 @@ export default async function Home() {
           >
             Newsletters 📰
           </Button>
+          <Button
+            render={<Link href="/tv-tinder" />}
+            nativeButton={false}
+            variant="outline"
+            size="lg"
+            className="rounded-full px-8"
+          >
+            TV Tinder 🍿
+          </Button>
         </div>
       </div>
 

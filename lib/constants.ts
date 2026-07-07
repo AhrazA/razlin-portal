@@ -1,5 +1,7 @@
 export const ASSIGNEES = ["Ahraz", "Malin"] as const;
 
+export const TV_TINDER_VOTER_COOKIE = "tv_tinder_voter";
+
 export const DIFFICULTIES = ["EASY", "MEDIUM", "HARD"] as const;
 
 export const DIFFICULTY_POINTS: Record<(typeof DIFFICULTIES)[number], number> = {
