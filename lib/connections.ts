@@ -33,6 +33,7 @@ export type ConnectionsBoardWord = {
 export type ConnectionsState = {
   puzzleId: number;
   words: ConnectionsBoardWord[];
+  answers: ConnectionsGroup[];
   solvedGroups: ConnectionsGroup[];
   guesses: ConnectionsGuess[];
   mistakeCount: number;
@@ -93,7 +94,7 @@ export async function getPuzzleHistory(): Promise<ConnectionsHistoryEntry[]> {
           where g.puzzle_id = p.id and not g.correct
         ) >= ${MAX_MISTAKES}
       )
-    order by p.served_on desc, p.id desc
+    order by p.served_at desc nulls last, p.id desc
   `;
 }
 
@@ -174,6 +175,7 @@ export async function getGameState(puzzle: ConnectionsPuzzle): Promise<Connectio
   return {
     puzzleId: puzzle.id,
     words,
+    answers: puzzle.answers,
     solvedGroups,
     guesses,
     mistakeCount,

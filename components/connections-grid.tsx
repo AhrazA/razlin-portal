@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { requestNewPuzzle, submitGuess } from "@/app/actions/connections";
 import { Button } from "@/components/ui/button";
+import { ConnectionsHistoryBoard } from "@/components/connections-history-board";
 import { cn } from "@/lib/utils";
 import { type ConnectionsGuess, type ConnectionsGroup, type ConnectionsBoardWord } from "@/lib/connections";
 
@@ -16,6 +17,7 @@ const LEVEL_STYLES = [
 export function ConnectionsGrid({
   puzzleId,
   words,
+  answers,
   solvedGroups,
   guesses,
   mistakeCount,
@@ -25,6 +27,7 @@ export function ConnectionsGrid({
 }: {
   puzzleId: number;
   words: ConnectionsBoardWord[];
+  answers: ConnectionsGroup[];
   solvedGroups: ConnectionsGroup[];
   guesses: ConnectionsGuess[];
   mistakeCount: number;
@@ -74,20 +77,24 @@ export function ConnectionsGrid({
 
   return (
     <div className="flex w-full max-w-lg flex-col items-center gap-4">
-      <div className="flex w-full flex-col gap-2">
-        {solvedByLevel.map((group) => (
-          <div
-            key={group.group}
-            className={cn(
-              "flex flex-col items-center gap-1 rounded-xl py-3 text-center",
-              LEVEL_STYLES[group.level] ?? "bg-muted"
-            )}
-          >
-            <span className="text-xs font-semibold tracking-wide uppercase">{group.group}</span>
-            <span className="text-sm">{group.members.join(", ")}</span>
-          </div>
-        ))}
-      </div>
+      {finished ? (
+        <ConnectionsHistoryBoard answers={answers} />
+      ) : (
+        <div className="flex w-full flex-col gap-2">
+          {solvedByLevel.map((group) => (
+            <div
+              key={group.group}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-xl py-3 text-center",
+                LEVEL_STYLES[group.level] ?? "bg-muted"
+              )}
+            >
+              <span className="text-xs font-semibold tracking-wide uppercase">{group.group}</span>
+              <span className="text-sm">{group.members.join(", ")}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!finished && remaining.length > 0 && (
         <div

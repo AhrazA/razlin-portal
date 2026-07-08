@@ -45,6 +45,7 @@ export default async function ConnectionsPage() {
         <ConnectionsGrid
           puzzleId={state.puzzleId}
           words={state.words}
+          answers={state.answers}
           solvedGroups={state.solvedGroups}
           guesses={state.guesses}
           mistakeCount={state.mistakeCount}
