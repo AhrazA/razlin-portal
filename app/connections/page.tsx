@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { PLAYER_COOKIE } from "@/lib/constants";
 import { getGameState, getTodaysPuzzle } from "@/lib/connections";
 import { generateTodaysPuzzle } from "@/app/actions/connections";
-import { PlayerIdentity } from "@/components/player-identity";
 import { ConnectionsGrid } from "@/components/connections-grid";
 import { ConnectionsRules } from "@/components/connections-rules";
 import { LiveSync } from "@/components/live-sync";
@@ -11,18 +10,8 @@ import { Button } from "@/components/ui/button";
 
 export default async function ConnectionsPage() {
   const cookieStore = await cookies();
-  const player = cookieStore.get(PLAYER_COOKIE)?.value;
-
-  if (!player) {
-    return (
-      <PlayerIdentity
-        emoji="🧩"
-        heading="Who's playing?"
-        description="This just remembers you on this device so guesses in the history show who made them."
-        returnTo="/connections"
-      />
-    );
-  }
+  // proxy.ts redirects to /login/player before this page can render without the cookie set
+  const player = cookieStore.get(PLAYER_COOKIE)!.value;
 
   const puzzle = await getTodaysPuzzle();
   const state = puzzle ? await getGameState(puzzle) : null;

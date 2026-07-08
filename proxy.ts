@@ -1,17 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PLAYER_COOKIE } from "@/lib/constants";
 
-const COOKIE_NAME = "passcode";
+const PASSCODE_COOKIE = "passcode";
 
 export function proxy(request: NextRequest) {
-  const cookie = request.cookies.get(COOKIE_NAME)?.value;
+  const passcode = request.cookies.get(PASSCODE_COOKIE)?.value;
 
-  if (cookie === process.env.APP_PASSCODE) {
-    return NextResponse.next();
+  if (passcode !== process.env.APP_PASSCODE) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("from", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("from", request.nextUrl.pathname);
-  return NextResponse.redirect(loginUrl);
+  // Passcode cookies live a year, so most requests never touch /login again —
+  // this is what actually catches an authenticated visitor with no player picked yet.
+  if (!request.cookies.get(PLAYER_COOKIE)?.value) {
+    const playerUrl = new URL("/login/player", request.url);
+    playerUrl.searchParams.set("from", request.nextUrl.pathname);
+    return NextResponse.redirect(playerUrl);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

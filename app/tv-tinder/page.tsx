@@ -3,25 +3,14 @@ import { cookies } from "next/headers";
 import { PLAYER_COOKIE } from "@/lib/constants";
 import { getMatches, getTodaysBatch, getUnvotedPicksForVoter } from "@/lib/tv-tinder";
 import { generateTodaysBatch } from "@/app/actions/tv-tinder";
-import { PlayerIdentity } from "@/components/player-identity";
 import { TvTinderDeck } from "@/components/tv-tinder-deck";
 import { TvTinderMatches } from "@/components/tv-tinder-matches";
 import { Button } from "@/components/ui/button";
 
 export default async function TvTinderPage() {
   const cookieStore = await cookies();
-  const voter = cookieStore.get(PLAYER_COOKIE)?.value;
-
-  if (!voter) {
-    return (
-      <PlayerIdentity
-        emoji="🍿"
-        heading="Who's swiping?"
-        description="This just remembers you on this device — your votes stay hidden from the other person until it's a match."
-        returnTo="/tv-tinder"
-      />
-    );
-  }
+  // proxy.ts redirects to /login/player before this page can render without the cookie set
+  const voter = cookieStore.get(PLAYER_COOKIE)!.value;
 
   const [batch, picks, matches] = await Promise.all([
     getTodaysBatch(),

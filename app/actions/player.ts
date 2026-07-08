@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ASSIGNEES, PLAYER_COOKIE } from "@/lib/constants";
 
 export async function setPlayerIdentity(formData: FormData) {
@@ -17,6 +17,5 @@ export async function setPlayerIdentity(formData: FormData) {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  const returnTo = String(formData.get("returnTo") ?? "/");
-  revalidatePath(returnTo);
+  redirect(String(formData.get("returnTo") ?? "/"));
 }

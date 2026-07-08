@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PLAYER_COOKIE } from "@/lib/constants";
 
 export async function login(formData: FormData) {
   const passcode = String(formData.get("passcode") ?? "");
@@ -19,6 +20,10 @@ export async function login(formData: FormData) {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   });
+
+  if (!cookieStore.get(PLAYER_COOKIE)?.value) {
+    redirect(`/login/player?from=${encodeURIComponent(from)}`);
+  }
 
   redirect(from);
 }
