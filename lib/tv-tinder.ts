@@ -30,7 +30,7 @@ export async function generateDailyBatch(size = BATCH_SIZE): Promise<TvTinderPic
       release_date, vote_average::text as vote_average, batch_date::text as batch_date
     from tv_tinder_picks where batch_date = ${todayKey}
   `;
-  if (existing.length > 0) return existing;
+  if (existing.length > 0) return [];
 
   const seen = await sql<{ tmdb_id: number; media_type: string }[]>`
     select tmdb_id, media_type from tv_tinder_picks
