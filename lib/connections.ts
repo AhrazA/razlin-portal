@@ -56,16 +56,28 @@ function seededShuffle<T>(items: T[], seed: number): T[] {
 }
 
 export async function pickDailyPuzzle(): Promise<ConnectionsPuzzle | null> {
-  const todayKey = toDateKey(new Date());
-
-  const [existing] = await sql<ConnectionsPuzzle[]>`
-    select id, answers from connections_puzzles where served_on = ${todayKey}
-  `;
+  const existing = await getTodaysPuzzle();
   if (existing) return existing;
 
+  return servePuzzle();
+}
+
+export async function getTodaysPuzzle(): Promise<ConnectionsPuzzle | null> {
+  const todayKey = toDateKey(new Date());
+  const [puzzle] = await sql<ConnectionsPuzzle[]>`
+    select id, answers from connections_puzzles
+    where served_on = ${todayKey}
+    order by served_at desc nulls last, id desc
+    limit 1
+  `;
+  return puzzle ?? null;
+}
+
+async function servePuzzle(): Promise<ConnectionsPuzzle | null> {
+  const todayKey = toDateKey(new Date());
   const [picked] = await sql<ConnectionsPuzzle[]>`
     update connections_puzzles
-    set served_on = ${todayKey}
+    set served_on = ${todayKey}, served_at = now()
     where id = (
       select id from connections_puzzles
       where served_on is null
@@ -78,12 +90,18 @@ export async function pickDailyPuzzle(): Promise<ConnectionsPuzzle | null> {
   return picked ?? null;
 }
 
-export async function getTodaysPuzzle(): Promise<ConnectionsPuzzle | null> {
-  const todayKey = toDateKey(new Date());
-  const [puzzle] = await sql<ConnectionsPuzzle[]>`
-    select id, answers from connections_puzzles where served_on = ${todayKey}
-  `;
-  return puzzle ?? null;
+export async function requestNewPuzzle(): Promise<ConnectionsPuzzle | null> {
+  const current = await getTodaysPuzzle();
+  if (current) {
+    const state = await getGameState(current);
+    if (!state.isWon && !state.isLost) {
+      throw new Error("Today's puzzle isn't finished yet");
+    }
+  }
+
+  const picked = await servePuzzle();
+  if (!picked) throw new Error("No more puzzles left to serve");
+  return picked;
 }
 
 async function getGuesses(puzzleId: number): Promise<ConnectionsGuess[]> {

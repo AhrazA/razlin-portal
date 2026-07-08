@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pickDailyPuzzle } from "@/lib/connections";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -8,6 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   const puzzle = await pickDailyPuzzle();
+  revalidatePath("/connections")
 
   return NextResponse.json({ picked: puzzle?.id ?? null });
 }

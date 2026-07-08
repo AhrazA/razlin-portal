@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { submitGuess } from "@/app/actions/connections";
+import { requestNewPuzzle, submitGuess } from "@/app/actions/connections";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ConnectionsGuess, type ConnectionsGroup, type ConnectionsBoardWord } from "@/lib/connections";
@@ -35,6 +35,7 @@ export function ConnectionsGrid({
   const [selected, setSelected] = useState<string[]>([]);
   const [shake, setShake] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [newPuzzleError, setNewPuzzleError] = useState<string | null>(null);
 
   const remaining = words.filter((w) => w.solvedLevel === null);
   const solvedByLevel = [...solvedGroups].sort((a, b) => a.level - b.level);
@@ -59,6 +60,15 @@ export function ConnectionsGrid({
         setShake(true);
         setTimeout(() => setShake(false), 400);
       }
+    });
+  }
+
+  function getNewPuzzle() {
+    if (isPending) return;
+    setNewPuzzleError(null);
+    startTransition(async () => {
+      const result = await requestNewPuzzle();
+      if (!result.ok) setNewPuzzleError(result.error ?? "Couldn't get a new puzzle");
     });
   }
 
@@ -128,13 +138,23 @@ export function ConnectionsGrid({
       )}
 
       {finished && (
-        <div className="flex flex-col items-center gap-1 text-center">
+        <div className="flex flex-col items-center gap-2 text-center">
           <span className="text-2xl">{isWon ? "🎉" : "😔"}</span>
           <p className="text-sm text-muted-foreground">
             {isWon
               ? `Solved with ${mistakeCount} mistake${mistakeCount === 1 ? "" : "s"}.`
-              : "Out of guesses — better luck tomorrow."}
+              : "Out of guesses."}
           </p>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={isPending}
+            onClick={getNewPuzzle}
+            className="rounded-full px-6"
+          >
+            Get a new puzzle
+          </Button>
+          {newPuzzleError && <p className="text-xs text-destructive">{newPuzzleError}</p>}
         </div>
       )}
 
