@@ -79,11 +79,21 @@ export async function getTodaysPuzzle(): Promise<ConnectionsPuzzle | null> {
 }
 
 export async function getPuzzleHistory(): Promise<ConnectionsHistoryEntry[]> {
-  const todayKey = toDateKey(new Date());
   return sql<ConnectionsHistoryEntry[]>`
-    select id, served_on::text as served_on from connections_puzzles
-    where served_on is not null and served_on < ${todayKey}
-    order by served_on desc, id desc
+    select p.id, p.served_on::text as served_on
+    from connections_puzzles p
+    where p.served_on is not null
+      and (
+        (
+          select count(distinct g.matched_group) from connections_guesses g
+          where g.puzzle_id = p.id and g.correct
+        ) >= jsonb_array_length(p.answers)
+        or (
+          select count(*) from connections_guesses g
+          where g.puzzle_id = p.id and not g.correct
+        ) >= ${MAX_MISTAKES}
+      )
+    order by p.served_on desc, p.id desc
   `;
 }
 
