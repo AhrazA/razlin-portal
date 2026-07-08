@@ -1,19 +1,26 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { TV_TINDER_VOTER_COOKIE } from "@/lib/constants";
+import { PLAYER_COOKIE } from "@/lib/constants";
 import { getMatches, getTodaysBatch, getUnvotedPicksForVoter } from "@/lib/tv-tinder";
 import { generateTodaysBatch } from "@/app/actions/tv-tinder";
-import { TvTinderIdentity } from "@/components/tv-tinder-identity";
+import { PlayerIdentity } from "@/components/player-identity";
 import { TvTinderDeck } from "@/components/tv-tinder-deck";
 import { TvTinderMatches } from "@/components/tv-tinder-matches";
 import { Button } from "@/components/ui/button";
 
 export default async function TvTinderPage() {
   const cookieStore = await cookies();
-  const voter = cookieStore.get(TV_TINDER_VOTER_COOKIE)?.value;
+  const voter = cookieStore.get(PLAYER_COOKIE)?.value;
 
   if (!voter) {
-    return <TvTinderIdentity />;
+    return (
+      <PlayerIdentity
+        emoji="🍿"
+        heading="Who's swiping?"
+        description="This just remembers you on this device — your votes stay hidden from the other person until it's a match."
+        returnTo="/tv-tinder"
+      />
+    );
   }
 
   const [batch, picks, matches] = await Promise.all([

@@ -1,0 +1,163 @@
+import { sql } from "@/lib/db";
+
+export type ConnectionsGroup = {
+  level: number;
+  group: string;
+  members: string[];
+};
+
+export type ConnectionsPuzzle = {
+  id: number;
+  answers: ConnectionsGroup[];
+};
+
+export type ConnectionsGuess = {
+  id: number;
+  guessed_by: string;
+  words: string[];
+  correct: boolean;
+  matched_group: string | null;
+  created_at: string;
+};
+
+export type ConnectionsBoardWord = {
+  word: string;
+  solvedLevel: number | null;
+};
+
+export type ConnectionsState = {
+  puzzleId: number;
+  words: ConnectionsBoardWord[];
+  solvedGroups: ConnectionsGroup[];
+  guesses: ConnectionsGuess[];
+  mistakeCount: number;
+  isWon: boolean;
+  isLost: boolean;
+};
+
+const MAX_MISTAKES = 4;
+
+function toDateKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  let state = seed || 1;
+  function next() {
+    state = (state * 1103515245 + 12345) & 0x7fffffff;
+    return state / 0x7fffffff;
+  }
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+export async function pickDailyPuzzle(): Promise<ConnectionsPuzzle | null> {
+  const todayKey = toDateKey(new Date());
+
+  const [existing] = await sql<ConnectionsPuzzle[]>`
+    select id, answers from connections_puzzles where served_on = ${todayKey}
+  `;
+  if (existing) return existing;
+
+  const [picked] = await sql<ConnectionsPuzzle[]>`
+    update connections_puzzles
+    set served_on = ${todayKey}
+    where id = (
+      select id from connections_puzzles
+      where served_on is null
+      order by random()
+      limit 1
+    )
+    returning id, answers
+  `;
+
+  return picked ?? null;
+}
+
+export async function getTodaysPuzzle(): Promise<ConnectionsPuzzle | null> {
+  const todayKey = toDateKey(new Date());
+  const [puzzle] = await sql<ConnectionsPuzzle[]>`
+    select id, answers from connections_puzzles where served_on = ${todayKey}
+  `;
+  return puzzle ?? null;
+}
+
+async function getGuesses(puzzleId: number): Promise<ConnectionsGuess[]> {
+  return sql<ConnectionsGuess[]>`
+    select id, guessed_by, words, correct, matched_group, created_at::text as created_at
+    from connections_guesses
+    where puzzle_id = ${puzzleId}
+    order by created_at asc
+  `;
+}
+
+export async function getGameState(puzzle: ConnectionsPuzzle): Promise<ConnectionsState> {
+  const guesses = await getGuesses(puzzle.id);
+
+  const solvedGroupNames = new Set(
+    guesses.filter((g) => g.correct && g.matched_group).map((g) => g.matched_group)
+  );
+  const solvedGroups = puzzle.answers.filter((a) => solvedGroupNames.has(a.group));
+  const mistakeCount = guesses.filter((g) => !g.correct).length;
+
+  const solvedLevelByWord = new Map<string, number>();
+  for (const group of solvedGroups) {
+    for (const word of group.members) solvedLevelByWord.set(word, group.level);
+  }
+
+  const allWords = seededShuffle(
+    puzzle.answers.flatMap((a) => a.members),
+    puzzle.id
+  );
+  const words: ConnectionsBoardWord[] = allWords.map((word) => ({
+    word,
+    solvedLevel: solvedLevelByWord.get(word) ?? null,
+  }));
+
+  const isWon = solvedGroups.length === puzzle.answers.length;
+  const isLost = !isWon && mistakeCount >= MAX_MISTAKES;
+
+  return {
+    puzzleId: puzzle.id,
+    words,
+    solvedGroups,
+    guesses,
+    mistakeCount,
+    isWon,
+    isLost,
+  };
+}
+
+export async function submitGuess(
+  puzzleId: number,
+  guessedBy: string,
+  words: string[]
+): Promise<{ correct: boolean; matchedGroup: string | null }> {
+  const [puzzle] = await sql<ConnectionsPuzzle[]>`
+    select id, answers from connections_puzzles where id = ${puzzleId}
+  `;
+  if (!puzzle) throw new Error("Puzzle not found");
+
+  const state = await getGameState(puzzle);
+  if (state.isWon || state.isLost) {
+    throw new Error("This puzzle is already finished");
+  }
+
+  const normalized = new Set(words.map((w) => w.toUpperCase()));
+  const match = puzzle.answers.find(
+    (group) =>
+      group.members.length === normalized.size &&
+      group.members.every((m) => normalized.has(m.toUpperCase()))
+  );
+
+  await sql`
+    insert into connections_guesses (puzzle_id, guessed_by, words, correct, matched_group)
+    values (${puzzleId}, ${guessedBy}, ${words}, ${!!match}, ${match?.group ?? null})
+  `;
+
+  return { correct: !!match, matchedGroup: match?.group ?? null };
+}

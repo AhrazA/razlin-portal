@@ -81,6 +81,15 @@ export default async function Home() {
           >
             TV Tinder 🍿
           </Button>
+          <Button
+            render={<Link href="/connections" />}
+            nativeButton={false}
+            variant="outline"
+            size="lg"
+            className="rounded-full px-8"
+          >
+            Connections 🧩
+          </Button>
         </div>
       </div>
 
