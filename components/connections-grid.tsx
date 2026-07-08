@@ -44,6 +44,13 @@ export function ConnectionsGrid({
   const solvedByLevel = [...solvedGroups].sort((a, b) => a.level - b.level);
   const finished = isWon || isLost;
 
+  const revealedWords = finished
+    ? (() => {
+        const levelByWord = new Map(answers.flatMap((a) => a.members.map((m) => [m, a.level] as const)));
+        return words.map((w) => ({ word: w.word, solvedLevel: levelByWord.get(w.word) ?? w.solvedLevel }));
+      })()
+    : words;
+
   function toggle(word: string) {
     if (isPending || finished) return;
     setSelected((prev) => {
@@ -78,7 +85,7 @@ export function ConnectionsGrid({
   return (
     <div className="flex w-full max-w-lg flex-col items-center gap-4">
       {finished ? (
-        <ConnectionsHistoryBoard answers={answers} />
+        <ConnectionsHistoryBoard words={revealedWords} />
       ) : (
         <div className="flex w-full flex-col gap-2">
           {solvedByLevel.map((group) => (

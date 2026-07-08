@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { type ConnectionsGroup } from "@/lib/connections";
+import { type ConnectionsBoardWord } from "@/lib/connections";
 
 const LEVEL_STYLES = [
   "bg-yellow-200 text-yellow-900",
@@ -8,21 +8,18 @@ const LEVEL_STYLES = [
   "bg-purple-200 text-purple-900",
 ];
 
-export function ConnectionsHistoryBoard({ answers }: { answers: ConnectionsGroup[] }) {
-  const sorted = [...answers].sort((a, b) => a.level - b.level);
-
+export function ConnectionsHistoryBoard({ words }: { words: ConnectionsBoardWord[] }) {
   return (
-    <div className="flex w-full max-w-lg flex-col gap-2">
-      {sorted.map((group) => (
+    <div className="grid w-full max-w-lg grid-cols-4 gap-2">
+      {words.map(({ word, solvedLevel }) => (
         <div
-          key={group.group}
+          key={word}
           className={cn(
-            "flex flex-col items-center gap-1 rounded-xl py-3 text-center",
-            LEVEL_STYLES[group.level] ?? "bg-muted"
+            "flex aspect-square items-center justify-center rounded-lg p-1 text-center text-xs font-semibold uppercase",
+            solvedLevel !== null ? (LEVEL_STYLES[solvedLevel] ?? "bg-muted") : "bg-card"
           )}
         >
-          <span className="text-xs font-semibold tracking-wide uppercase">{group.group}</span>
-          <span className="text-sm">{group.members.join(", ")}</span>
+          {word}
         </div>
       ))}
     </div>

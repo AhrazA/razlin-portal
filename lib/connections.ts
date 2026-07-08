@@ -61,6 +61,22 @@ function seededShuffle<T>(items: T[], seed: number): T[] {
   return result;
 }
 
+export function getRevealedBoard(puzzle: ConnectionsPuzzle): ConnectionsBoardWord[] {
+  const levelByWord = new Map<string, number>();
+  for (const group of puzzle.answers) {
+    for (const word of group.members) levelByWord.set(word, group.level);
+  }
+
+  const allWords = seededShuffle(
+    puzzle.answers.flatMap((a) => a.members),
+    puzzle.id
+  );
+  return allWords.map((word) => ({
+    word,
+    solvedLevel: levelByWord.get(word) ?? null,
+  }));
+}
+
 export async function pickDailyPuzzle(): Promise<ConnectionsPuzzle | null> {
   const existing = await getTodaysPuzzle();
   if (existing) return existing;
@@ -160,11 +176,7 @@ export async function getGameState(puzzle: ConnectionsPuzzle): Promise<Connectio
     for (const word of group.members) solvedLevelByWord.set(word, group.level);
   }
 
-  const allWords = seededShuffle(
-    puzzle.answers.flatMap((a) => a.members),
-    puzzle.id
-  );
-  const words: ConnectionsBoardWord[] = allWords.map((word) => ({
+  const words: ConnectionsBoardWord[] = getRevealedBoard(puzzle).map(({ word }) => ({
     word,
     solvedLevel: solvedLevelByWord.get(word) ?? null,
   }));
