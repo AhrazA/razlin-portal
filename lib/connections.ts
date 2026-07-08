@@ -11,6 +11,11 @@ export type ConnectionsPuzzle = {
   answers: ConnectionsGroup[];
 };
 
+export type ConnectionsHistoryEntry = {
+  id: number;
+  served_on: string;
+};
+
 export type ConnectionsGuess = {
   id: number;
   guessed_by: string;
@@ -69,6 +74,23 @@ export async function getTodaysPuzzle(): Promise<ConnectionsPuzzle | null> {
     where served_on = ${todayKey}
     order by served_at desc nulls last, id desc
     limit 1
+  `;
+  return puzzle ?? null;
+}
+
+export async function getPuzzleHistory(): Promise<ConnectionsHistoryEntry[]> {
+  const todayKey = toDateKey(new Date());
+  return sql<ConnectionsHistoryEntry[]>`
+    select id, served_on::text as served_on from connections_puzzles
+    where served_on is not null and served_on < ${todayKey}
+    order by served_on desc, id desc
+  `;
+}
+
+export async function getPuzzleById(id: number): Promise<ConnectionsPuzzle | null> {
+  const [puzzle] = await sql<ConnectionsPuzzle[]>`
+    select id, answers from connections_puzzles
+    where id = ${id} and served_on is not null
   `;
   return puzzle ?? null;
 }

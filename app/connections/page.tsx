@@ -24,7 +24,9 @@ export default async function ConnectionsPage() {
           ← Home
         </Button>
         <h1 className="font-heading text-2xl italic text-primary">Connections 🧩</h1>
-        <span className="w-14" />
+        <Button render={<Link href="/connections/history" />} nativeButton={false} variant="ghost" size="sm">
+          History
+        </Button>
       </div>
 
       {!state ? (
