@@ -5,22 +5,33 @@ import Image from "next/image";
 import { vote } from "@/app/actions/tv-tinder";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TMDB_IMAGE_BASE } from "@/lib/tmdb";
+import { TMDB_IMAGE_BASE, tmdbTitleUrl } from "@/lib/tmdb";
 import { type TvTinderPick } from "@/lib/tv-tinder";
 
 const SWIPE_THRESHOLD = 100;
 
 function Poster({ pick }: { pick: TvTinderPick }) {
   return pick.poster_path ? (
-    <Image
-      src={`${TMDB_IMAGE_BASE}${pick.poster_path}`}
-      alt={pick.title}
-      fill
-      sizes="(max-width: 448px) 92vw, 448px"
-      className="pointer-events-none object-cover"
-      draggable={false}
-      priority
-    />
+    <>
+      <Image
+        src={`${TMDB_IMAGE_BASE}${pick.poster_path}`}
+        alt=""
+        aria-hidden
+        fill
+        sizes="(max-width: 448px) 92vw, 448px"
+        className="pointer-events-none scale-110 object-cover blur-xl brightness-75"
+        draggable={false}
+      />
+      <Image
+        src={`${TMDB_IMAGE_BASE}${pick.poster_path}`}
+        alt={pick.title}
+        fill
+        sizes="(max-width: 448px) 92vw, 448px"
+        className="pointer-events-none object-contain"
+        draggable={false}
+        priority
+      />
+    </>
   ) : (
     <div className="flex size-full items-center justify-center bg-muted text-4xl">🎬</div>
   );
@@ -84,7 +95,7 @@ function Card({
         opacity: leaving ? 0 : 1,
       }}
     >
-      <div className="relative min-h-0 flex-[2] bg-muted">
+      <div className="relative min-h-0 flex-[2] overflow-hidden bg-muted">
         <Poster pick={pick} />
         <span className="absolute top-3 left-3 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium text-primary shadow">
           {pick.media_type === "movie" ? "🎬 Movie" : "📺 TV"}
@@ -103,9 +114,20 @@ function Card({
         </div>
       </div>
       <div className="flex min-h-0 flex-[1] flex-col gap-2 overflow-hidden bg-card p-5">
-        <h2 className="line-clamp-2 font-heading text-2xl leading-tight italic text-primary">
-          {pick.title}
-        </h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="line-clamp-2 font-heading text-2xl leading-tight italic text-primary">
+            {pick.title}
+          </h2>
+          <a
+            href={tmdbTitleUrl(pick.media_type, pick.tmdb_id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onPointerDown={(e) => e.stopPropagation()}
+            className="mt-1 shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-primary"
+          >
+            TMDB ↗
+          </a>
+        </div>
         {pick.overview && (
           <p className="line-clamp-3 text-sm text-muted-foreground">{pick.overview}</p>
         )}

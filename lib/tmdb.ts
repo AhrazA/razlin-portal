@@ -2,6 +2,10 @@ const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w780";
 
+export function tmdbTitleUrl(mediaType: "movie" | "tv", tmdbId: number): string {
+  return `https://www.themoviedb.org/${mediaType}/${tmdbId}`;
+}
+
 export type TmdbTrendingItem = {
   id: number;
   media_type: "movie" | "tv" | "person";
