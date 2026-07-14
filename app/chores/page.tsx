@@ -27,6 +27,12 @@ type Occurrence = {
 
 export default async function ChoresPage() {
   const days = getCalendarDays(new Date());
+  const lookbackDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(days[0]);
+    d.setDate(d.getDate() - 7 + i);
+    return d;
+  });
+  const lookbackStartKey = toDateKey(lookbackDays[0]);
   const startKey = toDateKey(days[0]);
   const endKey = toDateKey(days[days.length - 1]);
   const todayKey = toDateKey(new Date());
@@ -41,7 +47,7 @@ export default async function ChoresPage() {
   const overrides = await sql<Occurrence[]>`
     select chore_id, date::text as date, assignee, status
     from chore_occurrences
-    where date >= ${startKey} and date <= ${endKey}
+    where date >= ${lookbackStartKey} and date <= ${endKey}
   `;
   const overrideMap = new Map(overrides.map((o) => [`${o.chore_id}:${o.date}`, o]));
 
@@ -84,13 +90,38 @@ export default async function ChoresPage() {
   const dayLabelFor = (day: DayData) =>
     day.isToday ? "Today" : day.label.split(",")[0].slice(0, 3);
 
-  const due = dayData
-    .filter((day) => day.dateKey <= todayKey)
-    .flatMap((day) =>
-      day.items
-        .filter((item) => item.status === "PENDING")
-        .map((item) => ({ ...item, dayLabel: dayLabelFor(day) }))
-    );
+  const overdue = lookbackDays.flatMap((day) => {
+    const dateKey = toDateKey(day);
+    return chores
+      .filter((chore) => choreOccursOn(chore, day))
+      .map((chore) => {
+        const override = overrideMap.get(`${chore.id}:${dateKey}`);
+        return {
+          choreId: chore.id,
+          date: dateKey,
+          emoji: chore.emoji,
+          title: chore.title,
+          assignee: override?.assignee ?? null,
+          status: override?.status ?? ("PENDING" as ChoreOccurrenceStatus),
+        };
+      })
+      .filter((item) => item.status === "PENDING")
+      .map((item) => ({
+        ...item,
+        dayLabel: day.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+      }));
+  });
+
+  const due = [
+    ...overdue,
+    ...dayData
+      .filter((day) => day.dateKey <= todayKey)
+      .flatMap((day) =>
+        day.items
+          .filter((item) => item.status === "PENDING")
+          .map((item) => ({ ...item, dayLabel: dayLabelFor(day) }))
+      ),
+  ];
 
   const upNext = dayData
     .filter((day) => day.dateKey > todayKey)
