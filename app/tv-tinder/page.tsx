@@ -21,11 +21,10 @@ export default async function TvTinderPage() {
   return (
     <div className="flex min-h-screen flex-col items-center gap-6 bg-gradient-to-br from-background via-secondary/40 to-accent/30 p-6">
       <div className="flex w-full max-w-md items-center justify-between">
-        <Button render={<Link href="/" />} nativeButton={false} variant="ghost" size="sm">
-          ← Home
-        </Button>
         <h1 className="font-heading text-2xl italic text-primary">TV Tinder 🍿</h1>
-        <span className="w-14" />
+        <Button render={<Link href="/" />} nativeButton={false} variant="ghost" size="sm">
+          Home
+        </Button>
       </div>
 
       {batch.length === 0 ? (

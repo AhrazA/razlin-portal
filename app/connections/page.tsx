@@ -20,13 +20,15 @@ export default async function ConnectionsPage() {
     <div className="flex min-h-screen flex-col items-center gap-6 bg-gradient-to-br from-background via-secondary/40 to-accent/30 p-6">
       <LiveSync />
       <div className="flex w-full max-w-lg items-center justify-between">
-        <Button render={<Link href="/" />} nativeButton={false} variant="ghost" size="sm">
-          ← Home
-        </Button>
         <h1 className="font-heading text-2xl italic text-primary">Connections 🧩</h1>
-        <Button render={<Link href="/connections/history" />} nativeButton={false} variant="ghost" size="sm">
-          History
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button render={<Link href="/connections/history" />} nativeButton={false} variant="ghost" size="sm">
+            History
+          </Button>
+          <Button render={<Link href="/" />} nativeButton={false} variant="ghost" size="sm">
+            Home
+          </Button>
+        </div>
       </div>
 
       {!state ? (
