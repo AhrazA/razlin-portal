@@ -8,8 +8,8 @@ import {
   getCalendarDays,
   toDateKey,
 } from "@/lib/calendar";
-import { DIFFICULTY_POINTS } from "@/lib/constants";
 import { getStoredEventsForRange } from "@/lib/google-calendar";
+import { getChoreScores } from "@/lib/scores";
 import { AddChoreForm } from "@/components/add-chore-form";
 import { ChoresBoard } from "@/components/chores-board";
 import { type DayData } from "@/components/calendar-view";
@@ -45,18 +45,7 @@ export default async function ChoresPage() {
   `;
   const overrideMap = new Map(overrides.map((o) => [`${o.chore_id}:${o.date}`, o]));
 
-  const doneOccurrences = await sql<{ assignee: string | null; difficulty: Chore["difficulty"] }[]>`
-    select co.assignee, c.difficulty
-    from chore_occurrences co
-    join chores c on c.id = co.chore_id
-    where co.status = 'DONE'
-  `;
-  const scores: Record<string, number> = {};
-  for (const occurrence of doneOccurrences) {
-    if (!occurrence.assignee) continue;
-    scores[occurrence.assignee] =
-      (scores[occurrence.assignee] ?? 0) + DIFFICULTY_POINTS[occurrence.difficulty];
-  }
+  const scores = await getChoreScores();
 
   const googleEvents = await getStoredEventsForRange(startKey, endKey);
   const googleEventsByDate = new Map<string, typeof googleEvents>();

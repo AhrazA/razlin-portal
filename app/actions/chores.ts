@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
 import { toDateKey, type ChoreOccurrenceStatus } from "@/lib/calendar";
-import { DIFFICULTIES } from "@/lib/constants";
+import { ASSIGNEE_CYCLE, DIFFICULTIES } from "@/lib/constants";
 
 export async function createChore(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
@@ -47,6 +47,7 @@ export async function setOccurrenceAssignee(
   date: string,
   assignee: string | null
 ) {
+  if (!ASSIGNEE_CYCLE.includes(assignee)) return;
   await sql`
     insert into chore_occurrences (chore_id, date, assignee)
     values (${choreId}, ${date}, ${assignee})
@@ -65,6 +66,12 @@ export async function setOccurrenceStatus(
     values (${choreId}, ${date}, ${status})
     on conflict (chore_id, date) do update set status = excluded.status
   `;
+  revalidatePath("/chores");
+}
+
+export async function setChoreDifficulty(choreId: number, difficulty: string) {
+  if (!DIFFICULTIES.includes(difficulty as (typeof DIFFICULTIES)[number])) return;
+  await sql`update chores set difficulty = ${difficulty} where id = ${choreId}`;
   revalidatePath("/chores");
 }
 

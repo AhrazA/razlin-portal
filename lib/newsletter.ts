@@ -7,8 +7,8 @@ import {
   getPreviousWeekRange,
   toDateKey,
 } from "@/lib/calendar";
-import { DIFFICULTY_POINTS } from "@/lib/constants";
 import { getStoredEventsForRange, type GoogleEvent } from "@/lib/google-calendar";
+import { getChoreScores } from "@/lib/scores";
 
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash";
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
@@ -57,22 +57,6 @@ async function getChoreOccurrences(startKey: string, endKey: string): Promise<Ch
   return occurrences;
 }
 
-async function getChoreScores(): Promise<Record<string, number>> {
-  const doneOccurrences = await sql<{ assignee: string | null; difficulty: Chore["difficulty"] }[]>`
-    select co.assignee, c.difficulty
-    from chore_occurrences co
-    join chores c on c.id = co.chore_id
-    where co.status = 'DONE'
-  `;
-
-  const scores: Record<string, number> = {};
-  for (const occurrence of doneOccurrences) {
-    if (!occurrence.assignee) continue;
-    scores[occurrence.assignee] = (scores[occurrence.assignee] ?? 0) + DIFFICULTY_POINTS[occurrence.difficulty];
-  }
-  return scores;
-}
-
 function buildNewsletterPrompt(
   today: Date,
   startKey: string,
@@ -119,6 +103,8 @@ ${eventLines}
 
 Chores scheduled for the upcoming week:
 ${upcomingChoreLines}
+
+An assignee of "Both" means Ahraz and Malin do that chore together (and each earns full points for it).
 
 How last week's chores went (status is DONE, PENDING meaning it was missed, or CANCELLED):
 ${previousChoreLines}

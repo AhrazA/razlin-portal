@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { setOccurrenceAssignee, setOccurrenceStatus } from "@/app/actions/chores";
 import { Button } from "@/components/ui/button";
-import { ASSIGNEES } from "@/lib/constants";
+import { ASSIGNEE_CYCLE, assigneeBadge } from "@/lib/constants";
 
 type Props = {
   choreId: number;
@@ -14,8 +14,6 @@ type Props = {
   dayLabel: string;
   showActions?: boolean;
 };
-
-const ASSIGNEE_CYCLE: (string | null)[] = [null, ...ASSIGNEES];
 
 export function UpNextItem({
   choreId,
@@ -60,7 +58,7 @@ export function UpNextItem({
         title={assignee ?? "Unassigned"}
         className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-medium text-primary"
       >
-        {assignee ? assignee[0] : "❤️"}
+        {assigneeBadge(assignee)}
       </button>
       {showActions && (
         <>

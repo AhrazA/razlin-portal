@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { setOccurrenceAssignee, setOccurrenceStatus } from "@/app/actions/chores";
 import { type ChoreOccurrenceStatus } from "@/lib/calendar";
-import { ASSIGNEES } from "@/lib/constants";
+import { ASSIGNEE_CYCLE, assigneeBadge } from "@/lib/constants";
 
 type Props = {
   choreId: number;
@@ -13,8 +13,6 @@ type Props = {
   assignee: string | null;
   status: ChoreOccurrenceStatus;
 };
-
-const ASSIGNEE_CYCLE: (string | null)[] = [null, ...ASSIGNEES];
 
 export function OccurrenceChip({ choreId, date, emoji, title, assignee, status }: Props) {
   const [isPending, startTransition] = useTransition();
@@ -52,7 +50,7 @@ export function OccurrenceChip({ choreId, date, emoji, title, assignee, status }
         title={assignee ?? "Unassigned"}
         className="shrink-0 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-medium text-primary"
       >
-        {assignee ? assignee[0] : "❤️"}
+        {assigneeBadge(assignee)}
       </button>
     </div>
   );

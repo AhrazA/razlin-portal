@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { OccurrenceChip } from "@/components/occurrence-chip";
 import { type ChoreOccurrenceStatus } from "@/lib/calendar";
+import { assigneeBadge } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -88,7 +89,7 @@ export function CalendarView({
                         "scale-125 ring-2 ring-accent-foreground ring-offset-1 ring-offset-background"
                     )}
                   >
-                    {item.assignee ? item.assignee[0] : "❤️"}
+                    {assigneeBadge(item.assignee)}
                   </span>
                 ))}
                 {day.googleEvents.slice(0, 4).map((event) => (
